@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 OP_NOP   = 0 # don't do anything
+OP_LOAD  = 1 # load ACC from address
+OP_STORE = 2 # store ACC to address
 
 class Cpu:
   def __init__(self):
@@ -26,12 +28,22 @@ class Cpu:
     self.pc = self.pc + 1
 
   def execute_loaded_instruction(self):
-    # read operation
     if( self.operation == OP_NOP ):
       self.op_nop()
+    if( self.operation == OP_LOAD  ):
+      self.op_load()
+    if( self.operation == OP_STORE ):
+      self.op_store()
+
 
   def op_nop(self):
     print("executed nop")
+
+  def op_load():
+    self.acc = self.memory[self.operation_argument]
+
+  def op_store():
+    self.memory[self.operation_argument] = self.acc
 
 cpu = Cpu()
 
