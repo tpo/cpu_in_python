@@ -11,7 +11,24 @@ class Cpu:
     self.operation_argument = 0
     self.pc = 0
 
-    self.memory = [0] * 100
+    # Memory contents:
+    #   0 -   3: program
+    #   4 -   5: data
+    #   6 - 100: empty (NOP) memory
+    #
+    self.memory = [ # PROGRAM
+                    OP_LOAD,
+                    4,
+                    OP_STORE,
+                    5
+                  ]            \
+                    +          \
+                  [ # DATA
+                    77,
+                    78
+                  ]            \
+                    +          \
+                  [ 0 ] * 94
 
   def run(self):
     self.loop()
