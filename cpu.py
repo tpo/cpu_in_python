@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+OP_NOP   = 0 # don't do anything
+
 class Cpu:
   def __init__(self):
     self.acc = [0,0]
@@ -24,7 +26,12 @@ class Cpu:
     self.pc = self.pc + 1
 
   def execute_loaded_instruction(self):
-    print("exec")
+    # read operation
+    if( self.operation == OP_NOP ):
+      self.op_nop()
+
+  def op_nop(self):
+    print("executed nop")
 
 cpu = Cpu()
 
