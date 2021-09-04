@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 class Cpu:
   def __init__(self):
     self.acc = [0,0]
