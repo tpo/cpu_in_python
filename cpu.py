@@ -6,7 +6,7 @@ OP_STORE = 2 # store ACC to address
 
 class Cpu:
   def __init__(self):
-    self.acc = [0,0]
+    self.acc = 0
     self.operation = 0
     self.operation_argument = 0
     self.pc = 0
@@ -18,6 +18,7 @@ class Cpu:
 
   def loop(self):
      while(True):
+       self.dump_cpu_state()
        self.load_next_instruction_from_memory()
        self.execute_loaded_instruction()
 
@@ -39,11 +40,20 @@ class Cpu:
   def op_nop(self):
     print("executed nop")
 
-  def op_load():
+  def op_load(self):
     self.acc = self.memory[self.operation_argument]
 
-  def op_store():
+  def op_store(self):
     self.memory[self.operation_argument] = self.acc
+
+
+  def dump_cpu_state(self):
+    print("CPU state")
+    print("---------")
+    print("ACC:    %d" % self.acc)
+    print("OP:     %d" % self.operation)
+    print("OP_ARG: %d" % self.operation_argument)
+    print("PC:     %d" % self.pc)
 
 cpu = Cpu()
 
