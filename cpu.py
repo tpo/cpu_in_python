@@ -85,13 +85,12 @@ class Cpu:
      signal.pause() # sleep forever/until interrupted
 
   def dump_cpu_state(self):
-    print("CPU state")
-    print("---------")
     print("ACC:     %d" % self.acc)
     print("OP:      %d" % self.operation)
     print("OP_ARG:  %d" % self.operation_argument)
     print("PC:      %d" % self.pc)
     print("mem[%d]: %d" % (self.debug_watch_addr, self.memory[self.debug_watch_addr]))
+    print()
 
 cpu = Cpu()
 
