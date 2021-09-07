@@ -3,6 +3,7 @@
 OP_NOP   = 0 # don't do anything
 OP_LOAD  = 1 # load ACC from address
 OP_STORE = 2 # store ACC to address
+OP_JMP   = 3 # jump to given address
 
 class Cpu:
   def __init__(self):
@@ -54,6 +55,8 @@ class Cpu:
       self.op_load()
     if( self.operation == OP_STORE ):
       self.op_store()
+    elif( self.operation == OP_JMP   ):
+      self.op_jmp()
 
 
   def op_nop(self):
@@ -65,6 +68,8 @@ class Cpu:
   def op_store(self):
     self.memory[self.operation_argument] = self.acc
 
+  def op_jmp(self):
+    self.pc = self.operation_argument
 
   def dump_cpu_state(self):
     print("CPU state")
