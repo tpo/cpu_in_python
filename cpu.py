@@ -45,10 +45,9 @@ class Cpu:
        self.execute_loaded_instruction()
 
   def load_next_instruction_from_memory(self):
-    self.operation = self.memory[self.pc]
-    self.pc = self.pc + 1
-    self.operation_argument = self.memory[self.pc]
-    self.pc = self.pc + 1
+    self.operation          = self.memory[self.pc]
+    self.operation_argument = self.memory[self.pc + 1]
+    self.pc = self.pc + 2
 
   def execute_loaded_instruction(self):
     if( self.operation == OP_NOP ):
