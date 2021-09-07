@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import signal # for signal.pause()
+
 OP_NOP   = 0 # don't do anything
 OP_LOAD  = 1 # load ACC from address
 OP_STORE = 2 # store ACC to address
@@ -59,6 +61,8 @@ class Cpu:
       self.op_store()
     elif( op == OP_JMP   ):
       self.op_jmp()
+    else:
+      self.op_unknown()
 
 
   def op_nop(self):
@@ -72,6 +76,13 @@ class Cpu:
 
   def op_jmp(self):
     self.pc = self.operation_argument
+
+  def op_unknown(self):
+    self.halt()
+
+  def halt(self):
+     print("CPU crashed")
+     signal.pause() # sleep forever/until interrupted
 
   def dump_cpu_state(self):
     print("CPU state")
