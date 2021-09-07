@@ -85,12 +85,27 @@ class Cpu:
      signal.pause() # sleep forever/until interrupted
 
   def dump_cpu_state(self):
+    next_op = self.memory[self.pc]
+    next_op_arg = self.memory[self.pc+1]
     print("ACC:     %d" % self.acc)
-    print("OP:      %d" % self.operation)
-    print("OP_ARG:  %d" % self.operation_argument)
+    print("OP_CODE: %d" % next_op)
+    print("OP_ASM:  %s" % self.op_to_asm(next_op))
+    print("OP_ARG:  %d" % next_op_arg)
     print("PC:      %d" % self.pc)
     print("mem[%d]: %d" % (self.debug_watch_addr, self.memory[self.debug_watch_addr]))
     print()
+
+  def op_to_asm(self, op):
+    if(   op == OP_NOP   ):
+      return "OP_NOP"
+    elif( op == OP_LOAD  ):
+      return "OP_LOAD"
+    elif( op == OP_STORE ):
+      return "OP_STORE"
+    elif( op == OP_JMP   ):
+      return "OP_JMP"
+    else:
+      return "UNKNOWN: DATA?"
 
 cpu = Cpu()
 
