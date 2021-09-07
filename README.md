@@ -34,6 +34,8 @@ our steps that we want to reach one by one:
   * [ ] can load a word from memory to ACC
   * [ ] can store the ACC to memory
 
+* [ ] collaborative multitasking
+
 ATTENTION when working on this repo
 -----------------------------------
 
