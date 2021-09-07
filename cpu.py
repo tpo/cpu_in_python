@@ -13,15 +13,17 @@ class Cpu:
     self.pc = 0
 
     # Memory contents:
-    #   0 -   3: program
-    #   4 -   5: data
-    #   6 - 100: empty (NOP) memory
+    #   0 -   5: program
+    #   6 -   7: data
+    #   8 - 100: empty (NOP) memory
     #
     self.memory = [ # PROGRAM
                     OP_LOAD,
-                    4,
+                    6,
                     OP_STORE,
-                    5
+                    7,
+                    OP_JMP,
+                    0
                   ]            \
                     +          \
                   [ # DATA
@@ -29,9 +31,9 @@ class Cpu:
                     78
                   ]            \
                     +          \
-                  [ 0 ] * 94
+                  [ 0 ] * 92
 
-    self.debug_watch_addr = 5
+    self.debug_watch_addr = 7
 
   def run(self):
     self.loop()
