@@ -34,3 +34,14 @@ our steps that we want to reach one by one:
   * [ ] can load a word from memory to ACC
   * [ ] can store the ACC to memory
 
+ATTENTION when working on this repo
+-----------------------------------
+
+Until this project is somewhat stable I intend to keep on
+rewriting its git history. Justification: the goal here
+is for the commits to reflect clear logical progress and
+not the historic tribulations of its development.
+
+That means that until this project is stable you can not
+expect to be able to pull from this repo without major
+conflicts.
