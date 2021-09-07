@@ -87,11 +87,11 @@ class Cpu:
   def dump_cpu_state(self):
     next_op = self.memory[self.pc]
     next_op_arg = self.memory[self.pc+1]
-    print("ACC:     %d" % self.acc)
+    print("PC:      %d" % self.pc)
     print("OP_CODE: %d" % next_op)
     print("OP_ASM:  %s" % self.op_to_asm(next_op))
     print("OP_ARG:  %d" % next_op_arg)
-    print("PC:      %d" % self.pc)
+    print("ACC:     %d" % self.acc)
     print("mem[%d]: %d" % (self.debug_watch_addr, self.memory[self.debug_watch_addr]))
     print()
 
