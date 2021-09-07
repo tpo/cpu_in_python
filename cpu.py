@@ -50,13 +50,14 @@ class Cpu:
     self.pc = self.pc + 2
 
   def execute_loaded_instruction(self):
-    if( self.operation == OP_NOP ):
+    op = self.operation
+    if(   op == OP_NOP   ):
       self.op_nop()
-    if( self.operation == OP_LOAD  ):
+    elif( op == OP_LOAD  ):
       self.op_load()
-    if( self.operation == OP_STORE ):
+    elif( op == OP_STORE ):
       self.op_store()
-    elif( self.operation == OP_JMP   ):
+    elif( op == OP_JMP   ):
       self.op_jmp()
 
 
