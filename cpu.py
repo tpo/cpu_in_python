@@ -25,7 +25,7 @@ class Cpu:
                     OP_STORE,
                     7,
                     OP_JMP,
-                    0
+                    6
                   ]            \
                     +          \
                   [ # DATA
