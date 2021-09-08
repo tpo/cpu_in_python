@@ -7,23 +7,54 @@ OP_LOAD  = 1 # load ACC from address
 OP_STORE = 2 # store ACC to address
 OP_JMP   = 3 # jump to given address
 
+# "macro"
+OP_YIELD = OP_JMP # jump back into scheduler
+
 # Memory contents:
-#   0 -   5: program
-#   6 -   7: data
+#   0 -   3: program
 #
-PROCESS =  [ # PROGRAM
-             OP_LOAD,
-             6,
-             OP_STORE,
-             7,
-             OP_JMP,
-             0
-           ]            \
-             +          \
-           [ # DATA
-             77,
-             78
-           ] 
+DISPATCHER = [ # PROGRAM
+               OP_JMP,       #  0  # JMP PROCESS1
+               4,            #  1  #
+               OP_JMP,       #  2  # JMP PROCESS2
+               12            #  3  # 
+             ]                     # 
+                                   # 
+# Memory contents:                 # 
+#   4 -   9: program               # 
+#  10 -  11: data                  # 
+#                                  # 
+PROCESS1 =  [ # PROGRAM            # 
+              OP_LOAD,       #  4  # 
+              10,            #  5  # 
+              OP_STORE,      #  6  # 
+              11,            #  7  # 
+              OP_YIELD,      #  8  # JPM DISPATCHER:2
+              2              #  9  # 
+            ]                      \
+              +                    \
+            [ # DATA               # 
+              11,            # 10  # 
+              111            # 11  # 
+            ]                      # 
+                                   # 
+# Memory contents:                 # 
+#  12 -  17: program               # 
+#  18 -  19: data                  # 
+#                                  # 
+PROCESS2 =  [ # PROGRAM            # 
+              OP_LOAD,       # 12  # 
+              18,            # 13  # 
+              OP_STORE,      # 14  # 
+              19,            # 15  # 
+              OP_YIELD,      # 16  #  JPM DISPATCHER:0
+              0              # 17  # 
+            ]                      \
+              +                    \
+            [ # DATA               #
+              22,            # 18  #
+              222            # 19  #
+            ] 
 
 class Cpu:
   def __init__(self):
@@ -37,16 +68,13 @@ class Cpu:
     #   6 -   7: data
     #   8 - 100: empty (NOP) memory
     #
-    self.memory = PROCESS      \
+    self.memory = DISPATCHER   \
                     +          \
-                  [ # DATA
-                    77,
-                    78
-                  ]            \
+                  PROCESS1     \
                     +          \
-                  [ 0 ] * 92
+                  PROCESS2
 
-    self.debug_watch_addr = 7
+    self.debug_watch_addr = 11
 
   def run(self):
     self.loop()
