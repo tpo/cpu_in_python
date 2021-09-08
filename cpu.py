@@ -7,6 +7,24 @@ OP_LOAD  = 1 # load ACC from address
 OP_STORE = 2 # store ACC to address
 OP_JMP   = 3 # jump to given address
 
+# Memory contents:
+#   0 -   5: program
+#   6 -   7: data
+#
+PROCESS =  [ # PROGRAM
+             OP_LOAD,
+             6,
+             OP_STORE,
+             7,
+             OP_JMP,
+             0
+           ]            \
+             +          \
+           [ # DATA
+             77,
+             78
+           ] 
+
 class Cpu:
   def __init__(self):
     self.acc = 0
@@ -19,14 +37,7 @@ class Cpu:
     #   6 -   7: data
     #   8 - 100: empty (NOP) memory
     #
-    self.memory = [ # PROGRAM
-                    OP_LOAD,
-                    6,
-                    OP_STORE,
-                    7,
-                    OP_JMP,
-                    0
-                  ]            \
+    self.memory = PROCESS      \
                     +          \
                   [ # DATA
                     77,
