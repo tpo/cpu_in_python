@@ -120,7 +120,7 @@ class Cpu:
     self.halt()
 
   def halt(self):
-     print("CPU crashed")
+     print("system crashed")
      signal.pause() # sleep forever/until interrupted
 
   def dump_cpu_state(self):
