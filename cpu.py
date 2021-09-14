@@ -74,7 +74,7 @@ class Cpu:
                     +          \
                   PROCESS2
 
-    self.debug_watch_addr = 11
+    self.debug_watch_addr = [11]
 
   def run(self):
     self.loop()
@@ -131,7 +131,8 @@ class Cpu:
     print("OP_ASM:  %s" % self.op_to_asm(next_op))
     print("OP_ARG:  %d" % next_op_arg)
     print("ACC:     %d" % self.acc)
-    print("mem[%d]: %d" % (self.debug_watch_addr, self.memory[self.debug_watch_addr]))
+    for mem_adr in self.debug_watch_addr:
+       print("mem[%d]: %d" % (mem_adr, self.memory[mem_adr]))
     print()
 
   def op_to_asm(self, op):
