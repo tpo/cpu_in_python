@@ -2,10 +2,10 @@
 
 import signal # for signal.pause()
 
-OP_NOP   = 0 # don't do anything
-OP_LOAD  = 1 # load ACC from address
-OP_STORE = 2 # store ACC to address
-OP_JMP   = 3 # jump to given address
+OP_NOP     = 0 # don't do anything
+OP_LOAD    = 1 # load ACC from address
+OP_STORE   = 2 # store ACC to address
+OP_JMP     = 3 # jump to given address
 
 # "macro"
 OP_YIELD = OP_JMP # jump back into scheduler
@@ -58,10 +58,10 @@ PROCESS2 =  [ # PROGRAM            #
 
 class Cpu:
   def __init__(self):
-    self.acc = 0
-    self.operation = 0
-    self.operation_argument = 0
-    self.pc = 0
+    self.acc = 0                  # accumulator
+    self.operation = 0            # operation to execute
+    self.operation_argument = 0   # operand
+    self.pc = 0                   # program counter/instruction pointer
 
     # Memory contents:
     #   0 -   5: program
