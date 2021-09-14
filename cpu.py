@@ -6,55 +6,65 @@ OP_NOP     = 0 # don't do anything
 OP_LOAD    = 1 # load ACC from address
 OP_STORE   = 2 # store ACC to address
 OP_JMP     = 3 # jump to given address
+OP_JSUB    = 4 # jump to subroutine
+OP_RET     = 5 # return from subroutine
+OP_SET_SP  = 6 # copy ACC to SP
 
 # "macro"
-OP_YIELD = OP_JMP # jump back into scheduler
+OP_YIELD   = OP_RET # return into scheduler
 
-# Memory contents:
-#   0 -   3: program
-#
-DISPATCHER = [ # PROGRAM
-               OP_JMP,       #  0  # JMP PROCESS1
-               4,            #  1  #
-               OP_JMP,       #  2  # JMP PROCESS2
-               12            #  3  # 
-             ]                     # 
+OO         = 0 # NO_DATA
+
+INIT_STACK = [ # PROGRAM
+               OP_LOAD,      #  0  #
+               6,            #  1  # INIT_STACK.DATA
+               OP_SET_SP,    #  2  #
+               0,            #  3  # 
+               OP_JMP,       #  4  #
+               7             #  5  # DISPATCHER
+             ]                     \
+               +                   \
+             [ # DATA              #
+               29,           #  6  # STACK
+             ]                     #
                                    # 
-# Memory contents:                 # 
-#   4 -   9: program               # 
-#  10 -  11: data                  # 
-#                                  # 
+DISPATCHER = [ # PROGRAM           #
+               OP_JSUB,      #  7  #
+               13,           #  8  # PROCESS1
+               OP_JSUB,      #  9  #
+               21,           # 10  # PROCESS2 
+               OP_JMP,       # 11  #
+               7             # 12  # DISPATCHER 
+             ]                     # 
 PROCESS1 =  [ # PROGRAM            # 
-              OP_LOAD,       #  4  # 
-              10,            #  5  # 
-              OP_STORE,      #  6  # 
-              11,            #  7  # 
-              OP_YIELD,      #  8  # JPM DISPATCHER:2
-              2              #  9  # 
+              OP_LOAD,       # 13  # 
+              19,            # 14  # PROCESS1.DATA.0
+              OP_STORE,      # 15  # 
+              20,            # 16  # PROCESS1.DATA.1
+              OP_YIELD,      # 17  # RETURN
+              OO             # 18  # 
             ]                      \
               +                    \
             [ # DATA               # 
-              11,            # 10  # 
-              111            # 11  # 
+              11,            # 19  # 
+              111            # 20  # 
             ]                      # 
-                                   # 
-# Memory contents:                 # 
-#  12 -  17: program               # 
-#  18 -  19: data                  # 
-#                                  # 
 PROCESS2 =  [ # PROGRAM            # 
-              OP_LOAD,       # 12  # 
-              18,            # 13  # 
-              OP_STORE,      # 14  # 
-              19,            # 15  # 
-              OP_YIELD,      # 16  #  JPM DISPATCHER:0
-              0              # 17  # 
+              OP_LOAD,       # 21  # 
+              27,            # 22  # PROCESS2.DATA.0
+              OP_STORE,      # 23  # 
+              28,            # 24  # PROCESS3.DATA.0
+              OP_YIELD,      # 25  #
+              OO             # 26  #
             ]                      \
               +                    \
             [ # DATA               #
-              22,            # 18  #
-              222            # 19  #
-            ] 
+              22,            # 27  #
+              222            # 28  #
+            ]                      #
+STACK    =  [ # STACK        # 29  #
+              0              # ... #
+            ] * 10
 
 class Cpu:
   def __init__(self):
@@ -62,19 +72,24 @@ class Cpu:
     self.operation = 0            # operation to execute
     self.operation_argument = 0   # operand
     self.pc = 0                   # program counter/instruction pointer
+    self.sp = 0                   # stack pointer
 
     # Memory contents:
     #   0 -   5: program
     #   6 -   7: data
     #   8 - 100: empty (NOP) memory
     #
-    self.memory = DISPATCHER   \
+    self.memory = INIT_STACK   \
+                    +          \
+                  DISPATCHER   \
                     +          \
                   PROCESS1     \
                     +          \
-                  PROCESS2
+                  PROCESS2     \
+                    +          \
+                  STACK
 
-    self.debug_watch_addr = [11]
+    self.debug_watch_addr = [20,28,29,30]
 
   def run(self):
     self.loop()
@@ -100,6 +115,12 @@ class Cpu:
       self.op_store()
     elif( op == OP_JMP   ):
       self.op_jmp()
+    elif( op == OP_JSUB   ):
+      self.op_jsub()
+    elif( op == OP_RET   ):
+      self.op_ret()
+    elif( op == OP_SET_SP):
+      self.op_set_sp()
     else:
       self.op_unknown()
 
@@ -116,6 +137,18 @@ class Cpu:
   def op_jmp(self):
     self.pc = self.operation_argument
 
+  def op_jsub(self):
+    self.sp = self.sp + 1
+    self.memory[self.sp] = self.pc
+    self.op_jmp()
+
+  def op_ret(self):
+    self.pc = self.memory[self.sp]
+    self.sp = self.sp - 1
+
+  def op_set_sp(self):
+    self.sp = self.acc
+
   def op_unknown(self):
     self.halt()
 
@@ -131,6 +164,7 @@ class Cpu:
     print("OP_ASM:  %s" % self.op_to_asm(next_op))
     print("OP_ARG:  %d" % next_op_arg)
     print("ACC:     %d" % self.acc)
+    print("SP:      %d" % self.sp)
     for mem_adr in self.debug_watch_addr:
        print("mem[%d]: %d" % (mem_adr, self.memory[mem_adr]))
     print()
@@ -144,6 +178,12 @@ class Cpu:
       return "OP_STORE"
     elif( op == OP_JMP   ):
       return "OP_JMP"
+    elif( op == OP_JSUB   ):
+      return "OP_JSUB"
+    elif( op == OP_RET   ):
+      return "OP_RET"
+    elif( op == OP_SET_SP):
+      return "OP_SET_SP"
     else:
       return "UNKNOWN: DATA?"
 
