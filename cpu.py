@@ -16,14 +16,25 @@ OP_YIELD   = OP_RET # return into scheduler
 
 import program
 
+class Interrupt:
+  def __init__(self):
+    self.interrupt = False
+
+  def set(self, boolean):
+    self.interrupt = boolean
+
+  def test(self):
+    return self.interrupt
+
 class Cpu:
-  def __init__(self,memory):
+  def __init__(self,memory,interrupt):
     self.acc = 0                  # accumulator
     self.operation = 0            # operation to execute
     self.operation_argument = 0   # operand
     self.pc = 0                   # program counter/instruction pointer
     self.sp = 0                   # stack pointer
     self.memory = memory          # RAM
+    self.interrupt = interrupt    # signal interrupt
 
     self.debug_watch_addr = [20,28,29,30]
 
@@ -101,6 +112,7 @@ class Cpu:
     print("OP_ARG:  %d" % next_op_arg)
     print("ACC:     %d" % self.acc)
     print("SP:      %d" % self.sp)
+    print("INT:     %r" % self.interrupt.test())
     for mem_adr in self.debug_watch_addr:
        print("mem[%d]: %d" % (mem_adr, self.memory[mem_adr]))
     print()
@@ -123,7 +135,9 @@ class Cpu:
     else:
       return "UNKNOWN: DATA?"
 
-cpu_instance = Cpu( program.executable )
+interrupt = Interrupt()
+
+cpu_instance = Cpu( program.executable, interrupt )
 cpu_thread = threading.Thread( target = cpu_instance.run )
 
 cpu_thread.start()
