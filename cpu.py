@@ -13,81 +13,16 @@ OP_SET_SP  = 6 # copy ACC to SP
 # "macro"
 OP_YIELD   = OP_RET # return into scheduler
 
-OO         = 0 # NO_DATA
-
-INIT_STACK = [ # PROGRAM
-               OP_LOAD,      #  0  #
-               6,            #  1  # INIT_STACK.DATA
-               OP_SET_SP,    #  2  #
-               0,            #  3  # 
-               OP_JMP,       #  4  #
-               7             #  5  # DISPATCHER
-             ]                     \
-               +                   \
-             [ # DATA              #
-               29,           #  6  # STACK
-             ]                     #
-                                   # 
-DISPATCHER = [ # PROGRAM           #
-               OP_JSUB,      #  7  #
-               13,           #  8  # PROCESS1
-               OP_JSUB,      #  9  #
-               21,           # 10  # PROCESS2 
-               OP_JMP,       # 11  #
-               7             # 12  # DISPATCHER 
-             ]                     # 
-PROCESS1 =  [ # PROGRAM            # 
-              OP_LOAD,       # 13  # 
-              19,            # 14  # PROCESS1.DATA.0
-              OP_STORE,      # 15  # 
-              20,            # 16  # PROCESS1.DATA.1
-              OP_YIELD,      # 17  # RETURN
-              OO             # 18  # 
-            ]                      \
-              +                    \
-            [ # DATA               # 
-              11,            # 19  # 
-              111            # 20  # 
-            ]                      # 
-PROCESS2 =  [ # PROGRAM            # 
-              OP_LOAD,       # 21  # 
-              27,            # 22  # PROCESS2.DATA.0
-              OP_STORE,      # 23  # 
-              28,            # 24  # PROCESS3.DATA.0
-              OP_YIELD,      # 25  #
-              OO             # 26  #
-            ]                      \
-              +                    \
-            [ # DATA               #
-              22,            # 27  #
-              222            # 28  #
-            ]                      #
-STACK    =  [ # STACK        # 29  #
-              0              # ... #
-            ] * 10
+import program
 
 class Cpu:
-  def __init__(self):
+  def __init__(self,memory):
     self.acc = 0                  # accumulator
     self.operation = 0            # operation to execute
     self.operation_argument = 0   # operand
     self.pc = 0                   # program counter/instruction pointer
     self.sp = 0                   # stack pointer
-
-    # Memory contents:
-    #   0 -   5: program
-    #   6 -   7: data
-    #   8 - 100: empty (NOP) memory
-    #
-    self.memory = INIT_STACK   \
-                    +          \
-                  DISPATCHER   \
-                    +          \
-                  PROCESS1     \
-                    +          \
-                  PROCESS2     \
-                    +          \
-                  STACK
+    self.memory = memory          # RAM
 
     self.debug_watch_addr = [20,28,29,30]
 
@@ -187,6 +122,6 @@ class Cpu:
     else:
       return "UNKNOWN: DATA?"
 
-cpu = Cpu()
+cpu = Cpu(program.executable)
 
 cpu.run()
