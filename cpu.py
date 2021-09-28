@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import signal # for signal.pause()
+import time
 import threading
 
 OP_NOP     = 0 # don't do anything
@@ -20,8 +21,8 @@ class Interrupt:
   def __init__(self):
     self.interrupt = False
 
-  def set(self, boolean):
-    self.interrupt = boolean
+  def signal(self):
+    self.interrupt = True
 
   def test(self):
     return self.interrupt
@@ -135,9 +136,22 @@ class Cpu:
     else:
       return "UNKNOWN: DATA?"
 
+class Clock:
+  def __init__(self, interrupt):
+    self.interrupt = interrupt
+
+  def run(self):
+    while True:
+        time.sleep(2)
+        print("tick")
+        self.interrupt.signal()
+
 interrupt = Interrupt()
 
 cpu_instance = Cpu( program.executable, interrupt )
 cpu_thread = threading.Thread( target = cpu_instance.run )
-
 cpu_thread.start()
+
+clock_instance = Clock( interrupt )
+clock_thread = threading.Thread( target = clock_instance.run )
+clock_thread.start()
