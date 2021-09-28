@@ -24,6 +24,9 @@ class Interrupt:
   def signal(self):
     self.interrupt = True
 
+  def acknowledge(self):
+    self.interrupt = False
+
   def test(self):
     return self.interrupt
 
@@ -47,6 +50,12 @@ class Cpu:
        self.dump_cpu_state()
        self.load_next_instruction_from_memory()
        self.execute_loaded_instruction()
+       self.handle_interrupt()
+
+  def handle_interrupt(self):
+    if self.interrupt.test():
+      print("handling an interrupt")
+      self.interrupt.acknowledge()
 
   def load_next_instruction_from_memory(self):
     self.operation          = self.memory[self.pc]
@@ -155,3 +164,7 @@ cpu_thread.start()
 clock_instance = Clock( interrupt )
 clock_thread = threading.Thread( target = clock_instance.run )
 clock_thread.start()
+
+## wait for threads to terminate (they wont)
+cpu_thread.join()
+clock_thread.join()
