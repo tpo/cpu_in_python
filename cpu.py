@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import signal # for signal.pause()
+import threading
 
 OP_NOP     = 0 # don't do anything
 OP_LOAD    = 1 # load ACC from address
@@ -122,6 +123,7 @@ class Cpu:
     else:
       return "UNKNOWN: DATA?"
 
-cpu = Cpu(program.executable)
+cpu_instance = Cpu( program.executable )
+cpu_thread = threading.Thread( target = cpu_instance.run )
 
-cpu.run()
+cpu_thread.start()
