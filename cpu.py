@@ -12,6 +12,8 @@ OP_JSUB    = 4 # jump to subroutine
 OP_SET_SP  = 5 # copy ACC to SP
 OP_PUSH_PC = 6 # push PC to stack
 OP_POP_PC  = 7 # pop stack into PC
+OP_PUSH    = 6 # push ACC to stack
+OP_POP     = 7 # pop stack into ACC
 
 # TODO: the following should only be allowed in Ring 0
 OP_SET_INT = 8 # copy ACC to interrupt handler pointer
@@ -62,6 +64,8 @@ class Cpu:
     if self.interrupt.test():
       print("handling an interrupt")
       self.interrupt.acknowledge()
+      self.op_push_pc()
+      self.pc = self.interrupt_handler
 
   def load_next_instruction_from_memory(self):
     self.operation          = self.memory[self.pc]
@@ -86,6 +90,10 @@ class Cpu:
       self.op_push_pc()
     elif( op == OP_POP_PC ):
       self.op_pop_pc()
+    elif( op == OP_PUSH ):
+      self.op_push()
+    elif( op == OP_POP ):
+      self.op_pop()
     elif( op == OP_SET_INT):
       self.op_set_int()
     else:
@@ -108,16 +116,29 @@ class Cpu:
     self.op_push_pc()
     self.op_jmp()
 
+  def push(self,value):
+    self.sp = self.sp + 1
+    self.memory[self.sp] = value
+
+  def pop(self):
+    stack_top = self.memory[self.sp]
+    self.sp = self.sp - 1
+    return stack_top
+
   def op_set_sp(self):
     self.sp = self.acc
 
   def op_push_pc(self):
-    self.sp = self.sp + 1
-    self.memory[self.sp] = self.pc
+    self.push(self.pc)
 
   def op_pop_pc(self):
-    self.pc = self.memory[self.sp]
-    self.sp = self.sp - 1
+    self.pc = self.pop()
+
+  def op_push(self):
+    self.push(self.acc)
+
+  def op_pop(self):
+    self.acc = self.pop()
 
   def op_set_int(self):
     self.interrupt_handler = self.acc
@@ -160,6 +181,10 @@ class Cpu:
       return "OP_PUSH_PC"
     elif( op == OP_POP_PC ):
       return "OP_POP_PC/RET/YIELD"
+    elif( op == OP_PUSH ):
+      return "OP_PUSH"
+    elif( op == OP_POP ):
+      return "OP_POP"
     elif( op == OP_SET_INT):
       return "OP_SET_INT"
     else:
