@@ -9,11 +9,13 @@ OP_LOAD    = 1 # load ACC from address
 OP_STORE   = 2 # store ACC to address
 OP_JMP     = 3 # jump to given address
 OP_JSUB    = 4 # jump to subroutine
-OP_RET     = 5 # return from subroutine
-OP_SET_SP  = 6 # copy ACC to SP
+OP_SET_SP  = 5 # copy ACC to SP
+OP_PUSH_PC = 6 # push PC to stack
+OP_POP_PC  = 7 # pop stack into PC
 
 # "macro"
-OP_YIELD   = OP_RET # return into scheduler
+OP_RET     = OP_POP_PC # return from subroutine
+OP_YIELD   = OP_RET    # return into scheduler
 
 import program
 
@@ -74,10 +76,12 @@ class Cpu:
       self.op_jmp()
     elif( op == OP_JSUB   ):
       self.op_jsub()
-    elif( op == OP_RET   ):
-      self.op_ret()
     elif( op == OP_SET_SP):
       self.op_set_sp()
+    elif( op == OP_PUSH_PC ):
+      self.op_push_pc()
+    elif( op == OP_POP_PC ):
+      self.op_pop_pc()
     else:
       self.op_unknown()
 
@@ -95,16 +99,20 @@ class Cpu:
     self.pc = self.operation_argument
 
   def op_jsub(self):
-    self.sp = self.sp + 1
-    self.memory[self.sp] = self.pc
+    self.op_push_pc()
     self.op_jmp()
-
-  def op_ret(self):
-    self.pc = self.memory[self.sp]
-    self.sp = self.sp - 1
 
   def op_set_sp(self):
     self.sp = self.acc
+
+  def op_push_pc(self):
+    self.sp = self.sp + 1
+    self.memory[self.sp] = self.pc
+
+  def op_pop_pc(self):
+    self.pc = self.memory[self.sp]
+    self.sp = self.sp - 1
+
 
   def op_unknown(self):
     self.halt()
@@ -138,10 +146,12 @@ class Cpu:
       return "OP_JMP"
     elif( op == OP_JSUB   ):
       return "OP_JSUB"
-    elif( op == OP_RET   ):
-      return "OP_RET"
     elif( op == OP_SET_SP):
       return "OP_SET_SP"
+    elif( op == OP_PUSH_PC ):
+      return "OP_PUSH_PC"
+    elif( op == OP_POP_PC ):
+      return "OP_POP_PC/RET/YIELD"
     else:
       return "UNKNOWN: DATA?"
 
