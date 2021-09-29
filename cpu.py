@@ -13,6 +13,9 @@ OP_SET_SP  = 5 # copy ACC to SP
 OP_PUSH_PC = 6 # push PC to stack
 OP_POP_PC  = 7 # pop stack into PC
 
+# TODO: the following should only be allowed in Ring 0
+OP_SET_INT = 8 # copy ACC to interrupt handler pointer
+
 # "macro"
 OP_RET     = OP_POP_PC # return from subroutine
 OP_YIELD   = OP_RET    # return into scheduler
@@ -41,6 +44,7 @@ class Cpu:
     self.sp = 0                   # stack pointer
     self.memory = memory          # RAM
     self.interrupt = interrupt    # signal interrupt
+    self.interrupt_handler = 0
 
     self.debug_watch_addr = [20,28,29,30]
 
@@ -82,6 +86,8 @@ class Cpu:
       self.op_push_pc()
     elif( op == OP_POP_PC ):
       self.op_pop_pc()
+    elif( op == OP_SET_INT):
+      self.op_set_int()
     else:
       self.op_unknown()
 
@@ -113,6 +119,8 @@ class Cpu:
     self.pc = self.memory[self.sp]
     self.sp = self.sp - 1
 
+  def op_set_int(self):
+    self.interrupt_handler = self.acc
 
   def op_unknown(self):
     self.halt()
@@ -152,6 +160,8 @@ class Cpu:
       return "OP_PUSH_PC"
     elif( op == OP_POP_PC ):
       return "OP_POP_PC/RET/YIELD"
+    elif( op == OP_SET_INT):
+      return "OP_SET_INT"
     else:
       return "UNKNOWN: DATA?"
 
