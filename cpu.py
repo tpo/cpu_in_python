@@ -4,23 +4,31 @@ import signal # for signal.pause()
 import time
 import threading
 
+# register handles
+ACC        = 0
+PC         = 1
+EQ         = 2
+
 OP_NOP        =  0x00 # don't do anything
 OP_LOAD       =  0x01 # load ACC from address
 OP_STORE      =  0x02 # store ACC to address
 OP_JMP        =  0x03 # jump to given address
 OP_JSUB       =  0x04 # jump to subroutine
-OP_SET_SP     =  0x05 # copy ACC to SP
-OP_PUSH_PC    =  0x06 # push PC to stack
-OP_POP_PC     =  0x07 # pop stack into PC
-OP_PUSH       =  0x06 # push ACC to stack
-OP_POP        =  0x07 # pop stack into ACC
+OP_SP_TO_ACC  =  0x05 # copy SP TO ACC
+OP_ACC_TO_SP  =  0x06 # copy ACC to SP
+OP_PUSH       =  0x07 # push register onto stack
+OP_POP        =  0x08 # pop stack into register
+OP_EQ         =  0x09 # compare ACC with value at address and set EQ flag
+OP_JMP_EQ     =  0x0a # jump to given address if EQ flag is set
+
 
 # TODO: the following should only be allowed in Ring 0
-OP_SET_INT = 8 # copy ACC to interrupt handler pointer
+OP_SET_INT    = 0x0b # copy ACC to interrupt handler pointer
+OP_IRET       = 0x0c # return from exception, will pop the PC
 
 # "macro"
-OP_RET     = OP_POP_PC # return from subroutine
-OP_YIELD   = OP_RET    # return into scheduler
+OP_RET     = OP_POP # OP_RET PC   - return from subroutine
+OP_YIELD   = OP_RET # OP_YIELD PC - return into scheduler
 
 import program
 
@@ -47,8 +55,9 @@ class Cpu:
     self.memory = memory          # RAM
     self.interrupt = interrupt    # signal interrupt
     self.interrupt_handler = 0
+    self.eq = False
 
-    self.debug_watch_addr = [20,28,29,30]
+    self.debug_watch_addr = [0x6F,0x7B]
 
   def run(self):
     self.loop()
@@ -64,7 +73,7 @@ class Cpu:
     if self.interrupt.test():
       print("handling an interrupt")
       self.interrupt.acknowledge()
-      self.op_push_pc()
+      self.op_push(PC)
       self.pc = self.interrupt_handler
 
   def load_next_instruction_from_memory(self):
@@ -84,18 +93,22 @@ class Cpu:
       self.op_jmp()
     elif( op == OP_JSUB   ):
       self.op_jsub()
-    elif( op == OP_SET_SP):
-      self.op_set_sp()
-    elif( op == OP_PUSH_PC ):
-      self.op_push_pc()
-    elif( op == OP_POP_PC ):
-      self.op_pop_pc()
+    elif( op == OP_SP_TO_ACC):
+      self.op_sp_to_acc()
+    elif( op == OP_ACC_TO_SP):
+      self.op_acc_to_sp()
     elif( op == OP_PUSH ):
       self.op_push()
     elif( op == OP_POP ):
       self.op_pop()
     elif( op == OP_SET_INT):
       self.op_set_int()
+    elif( op == OP_EQ):
+      self.op_eq()
+    elif( op == OP_JMP_EQ):
+      self.op_jmp_eq()
+    elif( op == OP_IRET):
+      self.op_iret()
     else:
       self.op_unknown()
 
@@ -113,35 +126,63 @@ class Cpu:
     self.pc = self.operation_argument
 
   def op_jsub(self):
-    self.op_push_pc()
+    self.op_push(PC)
     self.op_jmp()
 
-  def push(self,value):
+  def op_push(self, operation_argument = None):
     self.sp = self.sp + 1
+
+    if operation_argument == None:
+      operation_argument = self.operation_argument
+
+    if   operation_argument == ACC:
+      value = self.acc
+    elif operation_argument == PC:
+      value = self.pc
+    elif operation_argument == EQ:
+      value = self.eq
+    else:
+      print("unknown operation_argument %d" % operation_argument)
+      self.halt()
+
     self.memory[self.sp] = value
 
-  def pop(self):
+  def op_pop(self, operation_argument = None):
     stack_top = self.memory[self.sp]
-    self.sp = self.sp - 1
-    return stack_top
 
-  def op_set_sp(self):
+    if operation_argument == None:
+      operation_argument = self.operation_argument
+
+    if   operation_argument == ACC:
+      self.acc = stack_top
+    elif operation_argument == PC:
+      self.pc = stack_top
+    elif operation_argument == EQ:
+      self.eq = stack_top
+    else:
+      print("unknown operation_argument %d" % operation_argument)
+      self.halt()
+
+    self.sp = self.sp - 1
+
+  def op_acc_to_sp(self):
     self.sp = self.acc
 
-  def op_push_pc(self):
-    self.push(self.pc)
-
-  def op_pop_pc(self):
-    self.pc = self.pop()
-
-  def op_push(self):
-    self.push(self.acc)
-
-  def op_pop(self):
-    self.acc = self.pop()
+  def op_sp_to_acc(self):
+    self.acc = self.sp
 
   def op_set_int(self):
     self.interrupt_handler = self.acc
+
+  def op_eq(self):
+    self.eq = ( self.acc == self.memory[self.operation_argument] )
+
+  def op_jmp_eq(self):
+    if self.eq:
+      self.op_jmp()
+
+  def op_iret(self):
+    self.op_pop(PC)
 
   def op_unknown(self):
     self.halt()
@@ -153,12 +194,12 @@ class Cpu:
   def dump_cpu_state(self):
     next_op = self.memory[self.pc]
     next_op_arg = self.memory[self.pc+1]
-    print("PC:      %d" % self.pc)
-    print("OP_CODE: %d" % next_op)
+    print("PC:      %s" % hex(self.pc))
+    print("OP_CODE: %s" % hex(next_op))
     print("OP_ASM:  %s" % self.op_to_asm(next_op))
-    print("OP_ARG:  %d" % next_op_arg)
-    print("ACC:     %d" % self.acc)
-    print("SP:      %d" % self.sp)
+    print("OP_ARG:  %d (%s)" % (next_op_arg, hex(next_op_arg)))
+    print("ACC:     %d (%s)" % (self.acc, hex(self.acc)))
+    print("SP:      %s" % hex(self.sp))
     print("INT:     %r" % self.interrupt.test())
     for mem_adr in self.debug_watch_addr:
        print("mem[%d]: %d" % (mem_adr, self.memory[mem_adr]))
@@ -175,18 +216,22 @@ class Cpu:
       return "OP_JMP"
     elif( op == OP_JSUB   ):
       return "OP_JSUB"
-    elif( op == OP_SET_SP):
-      return "OP_SET_SP"
-    elif( op == OP_PUSH_PC ):
-      return "OP_PUSH_PC"
-    elif( op == OP_POP_PC ):
-      return "OP_POP_PC/RET/YIELD"
+    elif( op == OP_ACC_TO_SP):
+      return "OP_ACC_TO_SP"
+    elif( op == OP_SP_TO_ACC):
+      return "OP_SP_TO_ACC"
     elif( op == OP_PUSH ):
       return "OP_PUSH"
     elif( op == OP_POP ):
-      return "OP_POP"
+      return "OP_POP/RET/YIELD"
     elif( op == OP_SET_INT):
       return "OP_SET_INT"
+    elif( op == OP_EQ):
+      return "OP_EQ"
+    elif( op == OP_JMP_EQ):
+      return "OP_JMP_EQ"
+    elif( op == OP_IRET):
+      return "OP_IRET"
     else:
       return "UNKNOWN: DATA?"
 
