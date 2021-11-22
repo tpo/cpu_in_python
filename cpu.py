@@ -4,16 +4,16 @@ import signal # for signal.pause()
 import time
 import threading
 
-OP_NOP     = 0 # don't do anything
-OP_LOAD    = 1 # load ACC from address
-OP_STORE   = 2 # store ACC to address
-OP_JMP     = 3 # jump to given address
-OP_JSUB    = 4 # jump to subroutine
-OP_SET_SP  = 5 # copy ACC to SP
-OP_PUSH_PC = 6 # push PC to stack
-OP_POP_PC  = 7 # pop stack into PC
-OP_PUSH    = 6 # push ACC to stack
-OP_POP     = 7 # pop stack into ACC
+OP_NOP        =  0x00 # don't do anything
+OP_LOAD       =  0x01 # load ACC from address
+OP_STORE      =  0x02 # store ACC to address
+OP_JMP        =  0x03 # jump to given address
+OP_JSUB       =  0x04 # jump to subroutine
+OP_SET_SP     =  0x05 # copy ACC to SP
+OP_PUSH_PC    =  0x06 # push PC to stack
+OP_POP_PC     =  0x07 # pop stack into PC
+OP_PUSH       =  0x06 # push ACC to stack
+OP_POP        =  0x07 # pop stack into ACC
 
 # TODO: the following should only be allowed in Ring 0
 OP_SET_INT = 8 # copy ACC to interrupt handler pointer
