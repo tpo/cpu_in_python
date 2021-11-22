@@ -1,5 +1,6 @@
 #!/bin/bash
 
-kasm.py --outFormat=PythonArray --inFormat=tpo program.asm
-! [ -e program.py ] && ln -s program.dat program.py
-./cpu.py
+if kasm.py --outFormat=PythonArray --inFormat=tpo program.asm; then
+  ! [ -e program.py ] && ln -s program.dat program.py
+  ./cpu.py
+fi
