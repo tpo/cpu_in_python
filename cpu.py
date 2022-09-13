@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+memory = [ ] # please fill this array with the code of your program. See the README.md.
+
 import signal # for signal.pause()
 import time
 import threading
@@ -29,8 +31,6 @@ OP_IRET       = 0x0c # return from exception, will pop the PC
 # "macro"
 OP_RET     = OP_POP # OP_RET PC   - return from subroutine
 OP_YIELD   = OP_RET # OP_YIELD PC - return into scheduler
-
-import program
 
 class Interrupt:
   def __init__(self):
@@ -247,7 +247,7 @@ class Clock:
 
 interrupt = Interrupt()
 
-cpu_instance = Cpu( program.executable, interrupt )
+cpu_instance = Cpu( memory, interrupt )
 cpu_thread = threading.Thread( target = cpu_instance.run )
 cpu_thread.start()
 
