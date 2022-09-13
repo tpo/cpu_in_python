@@ -1,6 +1,25 @@
 #!/bin/bash
 
+# kasm.py will generate a program.lst and a program.dat file
+#
 if kasm.py --outFormat=PythonArray --inFormat=tpo program.asm; then
-  ! [ -e program.py ] && ln -s program.dat program.py
-  ./cpu.py
+  (
+    echo '#!/usr/bin/python3'
+    echo '#'
+    echo '# ATTENTION: THIS IS A GENERATED FILE!'
+    echo
+    # the next line takes the program.lst and transforms it into
+    # a commented python array containing the generated code from
+    # program.lst. The output of the program goes to STDOUT
+    #
+    python3 lst_to_commented_bytes.py
+    cat cpu.py \
+    | grep -v '#!/usr/bin/python3' \
+    | grep -v '^memory = '
+
+  # write output to file cpu_with_program.py
+  ) > cpu_with_program.py
+
+  # execute file cpu_with_program.py
+  python3 cpu_with_program.py
 fi
