@@ -25,7 +25,6 @@ OP_JMP_EQ     =  0x0a # jump to given address if EQ flag is set
 
 
 # TODO: the following should only be allowed in Ring 0
-OP_SET_INT    = 0x0b # copy ACC to interrupt handler pointer
 OP_IRET       = 0x0c # return from exception, will pop the PC
 
 # "macro"
@@ -54,7 +53,7 @@ class Cpu:
     self.sp = 0                   # stack pointer
     self.memory = memory          # RAM
     self.interrupt = interrupt    # signal interrupt
-    self.interrupt_handler = 0
+    self.interrupt_handler = 0x02 # hard coded!
     self.eq = False
 
     self.debug_watch_addr = [0x6F,0x7B]
@@ -101,8 +100,6 @@ class Cpu:
       self.op_push()
     elif( op == OP_POP ):
       self.op_pop()
-    elif( op == OP_SET_INT):
-      self.op_set_int()
     elif( op == OP_EQ):
       self.op_eq()
     elif( op == OP_JMP_EQ):
@@ -171,9 +168,6 @@ class Cpu:
   def op_sp_to_acc(self):
     self.acc = self.sp
 
-  def op_set_int(self):
-    self.interrupt_handler = self.acc
-
   def op_eq(self):
     self.eq = ( self.acc == self.memory[self.operation_argument] )
 
@@ -224,8 +218,6 @@ class Cpu:
       return "OP_PUSH"
     elif( op == OP_POP ):
       return "OP_POP/RET/YIELD"
-    elif( op == OP_SET_INT):
-      return "OP_SET_INT"
     elif( op == OP_EQ):
       return "OP_EQ"
     elif( op == OP_JMP_EQ):

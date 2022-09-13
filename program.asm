@@ -2,8 +2,32 @@
 ; pc  = $1
 ; eq  = $2
 
-init:            op_load isr_addr
-                 op_set_int
+init:            op_jmp start_os_init      ; jump into operating system initialization code
+
+isr:             op_push #0                ; save ACC on stack. PC gets saved on stack by CPU
+                 op_push #2                ; save EQ on stack. PC gets saved on stack by CPU
+
+                 op_load proc_1_id         ; who's running? proc_1 or proc_2 ?
+                 op_eq running_proc        ; if it's proc_1
+                 op_jmp_eq run_proc_2      ; then run proc_2 now
+                                           ; else run proc_1
+
+run_proc_1:      op_load proc_1_id         ; memorize that we'll run proc_1 now
+                 op_store running_proc 
+                 op_load proc_1_sp
+                 op_jmp isr_common
+
+run_proc_2:      op_load proc_2_id         ; memorize that we'll run proc_2 now
+                 op_store running_proc 
+                 op_load proc_2_sp
+                 op_jmp isr_common
+
+isr_common:      op_acc_to_sp
+                 op_pop #2
+                 op_pop #0
+                 op_iret                   ; will use PC on stack
+
+start_os_init:   op_nop                    ; beginning of the OS initialization code
 
 init_proc_1:     op_load proc_1_stack_addr ; save proc1's registers on its stack
                  op_acc_to_sp              ; use proc_1's stack
@@ -44,29 +68,6 @@ proc_2_stack_addr:    db stack_2
 
 proc_1_addr:     db proc_1
 proc_2_addr:     db proc_2
-
-isr:             op_push #0                ; save ACC on stack. PC gets saved on stack by CPU
-                 op_push #2                ; save EQ on stack. PC gets saved on stack by CPU
-
-                 op_load proc_1_id         ; who's running? proc_1 or proc_2 ?
-                 op_eq running_proc        ; if it's proc_1
-                 op_jmp_eq run_proc_2      ; then run proc_2 now
-                                           ; else run proc_1
-
-run_proc_1:      op_load proc_1_id         ; memorize that we'll run proc_1 now
-                 op_store running_proc 
-                 op_load proc_1_sp
-                 op_jmp isr_common
-
-run_proc_2:      op_load proc_2_id         ; memorize that we'll run proc_2 now
-                 op_store running_proc 
-                 op_load proc_2_sp
-                 op_jmp isr_common
-
-isr_common:      op_acc_to_sp
-                 op_pop #2
-                 op_pop #0
-                 op_iret                ; will use PC on stack
 
 running_proc:    db 1
 pad1:            db 0
