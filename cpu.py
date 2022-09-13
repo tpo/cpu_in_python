@@ -57,7 +57,7 @@ class Cpu:
     self.interrupt_handler = 0x02 # hard coded!
     self.eq = False
 
-    self.debug_watch_addr = [0x6F,0x7B]
+    self.debug_watch_addr = [0x67,0x6c]
 
   def run(self):
     self.loop()
