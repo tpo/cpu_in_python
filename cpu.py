@@ -22,6 +22,7 @@ OP_PUSH       =  0x07 # push register onto stack
 OP_POP        =  0x08 # pop stack into register
 OP_EQ         =  0x09 # compare ACC with value at address and set EQ flag
 OP_JMP_EQ     =  0x0a # jump to given address if EQ flag is set
+OP_INC        =  0x0d # increment value at address
 
 
 # TODO: the following should only be allowed in Ring 0
@@ -106,6 +107,8 @@ class Cpu:
       self.op_jmp_eq()
     elif( op == OP_IRET):
       self.op_iret()
+    elif( op == OP_INC):
+      self.op_inc()
     else:
       self.op_unknown()
 
@@ -178,6 +181,9 @@ class Cpu:
   def op_iret(self):
     self.op_pop(PC)
 
+  def op_inc(self):
+    self.memory[self.operation_argument] += 1
+
   def op_unknown(self):
     self.halt()
 
@@ -224,6 +230,8 @@ class Cpu:
       return "OP_JMP_EQ"
     elif( op == OP_IRET):
       return "OP_IRET"
+    elif( op == OP_INC):
+      return "OP_INC"
     else:
       return "UNKNOWN: DATA?"
 

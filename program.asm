@@ -83,17 +83,13 @@ not_inited:      db 0
 zero:            db 0
 pad2:            db 0
 
-proc_1:          op_load data_1_1
-                 op_store data_1_2
+proc_1:          op_inc data_1
                  op_jmp proc_1
-data_1_1:        db 11
-data_1_2:        db 111
+data_1:          db 0
 stack_1:         db 0,0,0,0
 
-proc_2:          op_load data_2_1
-                 op_store data_2_2
+proc_2:          op_inc data_2
                  op_jmp proc_2
-data_2_1:        db 22
-data_2_2:        db 222
+data_2:          db 100
 stack_2:         db 0,0,0,0
 
